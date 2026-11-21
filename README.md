@@ -30,22 +30,28 @@ would be listed with a Valid of 0 is refused with the reason, rather than submit
 
 ## How the page was made
 
-Nothing is asserted that a wire did not file. `build/stories.json` is the selection as written by
-hand: for each line, a substring of a real headline and the label the page prints.
-`build/resolve.py` matches those substrings against the 765 items 46 feeds carried on the day and
-writes `build/resolved.json`, which supplies each line's UTC time, place tag and source — and stops
-the build if any story falls outside 20 November 2026 UTC. That check caught four stories that
-looked like Friday's and were not, including the Shenzhen summit and the COP31 cover text.
+Nothing is asserted that a wire did not file. The day was harvested at build time: 46 feeds — BBC,
+Al Jazeera, Google News, The Hindu, NDTV, Dawn, SCMP, DW, France 24, the Guardian, NPR, CBC, ABC,
+Sky, Moscow Times, Japan Times, Straits Times, RNZ, allAfrica, Punch, Premium Times, the Buenos
+Aires Times, the Rio Times, the Jerusalem Post, Bangkok Post, Philstar, VnExpress and more — carried
+765 items on 20 November 2026. Each story on the page was then matched back to the item that filed
+it first, and the build stopped on any story whose filing time fell outside that UTC day. That check
+caught four that looked like Friday's and were not: the Shenzhen summit and the COP31 cover text
+were Thursday's, and Zelensky calling Putin a "killer" was Saturday's.
 
-`build/render.py` draws the page from that file. `SOURCES.md` lists all 47 stories with the
-headline as the wire published it and a link to it.
+`build/render.py` carries the result of that work as `DATA` — every line with the UTC time it was
+first filed, the place tag, the wire and the label the page prints — and draws the image from it.
+Running it in a clone rewrites `entry.png` byte for byte; the harvest dump and the resolver that
+produced `DATA` are build inputs and are not committed, so the repository needs no network and no
+feed to reproduce the page. `SOURCES.md` lists all 47 stories with the headline as the wire
+published it, its UTC time and a link to it.
 
 | | |
 |---|---|
 | `main.ts` | the entry: check the PNG the way the gate does, copy it to `/output/entry.png` |
 | `entry.png` | the page: 1024x1024, 212,191 bytes |
 | `SOURCES.md` | every story on the page, its UTC filing time, the wire and the link |
-| `build/` | the harvest's selection, the resolver and the renderer |
+| `build/render.py` | the page's data and the renderer that draws `entry.png` from it |
 
 ## Licence
 

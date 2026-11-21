@@ -1,14 +1,13 @@
 #!/usr/bin/env python3
 """Draw the front page. Build-time only: the entry itself just copies the PNG.
 
-Input:  resolved.json (every line already resolved to a real wire item and its UTC time)
-Output: repo/entry.png, 1024x1024
+Input:  DATA, below (every line already resolved to a real wire item and its UTC time)
+Output: ../entry.png, the page this repository submits, 1024x1024
 
 Read as a clock: masthead and one dominant lead above the fold, two secondary leads, the
 day in numbers, then the remaining 44 stories in four columns running from 00:02 to the
 last filing of the night, and a date-check footer naming what was left out and why.
 """
-import json
 import os
 from PIL import Image, ImageDraw, ImageFont
 
@@ -90,8 +89,81 @@ def audit(w, h, slack=1.0):
                 bad.append(f"overlap {a[4]!r} / {b[4]!r}")
     return bad
 
+# The page, resolved: every line already matched to a wire item and its UTC filing
+# time, so this file draws the image without needing the harvest beside it.
+DATA = {
+    "day": 'FRIDAY 20 NOVEMBER 2026',
+    "day_short": '20 NOVEMBER 2026',
+    "n_total": 47,
+    "n_places": 36,
+    "first_hm": '00:02',
+    "last_hm": '23:39',
+    "leads": [  # UTC, place, wires, headline, deck, region
+        ('06:52', 'KYIV, UKRAINE', 'Moscow Times, The Hindu, Reuters',
+         "Russian missiles hit Kyiv's bridges, killing eight across Ukraine",
+         "One of the war's largest attacks on the capital struck two bridges and railway stations and cut power and water. Poland condemned three airspace violations; the Netherlands summoned Russia's ambassador.", 'EUROPE'),
+        ('13:39', 'NEW YORK, USA', "Sky News, Yahoo Finance, Guardian, Barron's",
+         "Anthropic's record debut lasts a day as the AI trade melts down",
+         "Shares fell more than 10% at Friday's open, a day after the record Nasdaq debut. Nvidia dropped 12%, the fear gauge touched 40, and the Nasdaq erased every gain it made in 2026.", 'AMERICAS'),
+        ('14:38', 'ANTALYA, TURKEY', 'France 24, Al Jazeera, The Hindu',
+         'COP31 ends in deadlock and overtime over fossil fuels',
+         'The draft cover text went out with no reference to a fossil-fuel phase-out, and the talks ran past their Friday deadline as nations quarrelled over the wording.', 'EUROPE'),
+    ],
+    "items": [  # UTC, place, wire, label, region
+        ('00:02', 'LONDON', 'BBC', 'Fridges secured from hackers in a secret operation', 'EUROPE'),
+        ('00:50', 'BERLIN', 'BBC', 'Europe says it is ready to talk to Moscow', 'EUROPE'),
+        ('02:08', 'CALIFORNIA', 'The Hindu', 'Subpoena for Nvidia over chips and its ex-CEO', 'AMERICAS'),
+        ('03:05', 'SYDNEY', 'Straits Times', "Anthropic's data centre opposed by residents", 'OCEANIA'),
+        ('03:46', 'RIYADH', 'NBC News', "Houthi strike hits the wealth fund's tower", 'MIDDLE EAST'),
+        ('05:30', 'TAIPEI', 'Reuters', 'Taiwan tells Meta of China-linked accounts', 'ASIA-PACIFIC'),
+        ('07:13', 'ODISHA', 'Indian Express', 'Cyclone Akvan makes landfall; no casualties', 'SOUTH ASIA'),
+        ('07:31', 'BAGHDAD', 'Reuters', 'Troops deploy in an Iran-backed stronghold', 'MIDDLE EAST'),
+        ('07:55', 'BEIJING', 'NDTV', "Xi declines to meet Japan's prime minister", 'ASIA-PACIFIC'),
+        ('09:17', 'KUNO', 'Indian Express', "A Botswana cheetah's cubs take India to 62", 'SOUTH ASIA'),
+        ('09:33', 'ABIDJAN', 'allAfrica', '22 African countries in or near debt distress', 'AFRICA'),
+        ('09:47', "COX'S BAZAR", 'The Hindu', "Rohingya welcome the World Court's ruling", 'SOUTH ASIA'),
+        ('10:06', 'KHARG ISLAND', 'Euronews', 'A tanker convoy to test the US blockade', 'MIDDLE EAST'),
+        ('10:16', 'SEOUL', 'BBC', '111 caught cheating in the Suneung exam', 'ASIA-PACIFIC'),
+        ('11:50', 'TALLINN', 'Reuters', 'Moscow cries "Iron Curtain" over the border', 'EUROPE'),
+        ('12:01', 'TATARSTAN', 'Kyiv Independent', 'Ukraine strikes the Druzhba pipeline', 'EUROPE'),
+        ('12:02', 'WASHINGTON', 'CBS News', 'The US and Israel weigh an assault on Iran', 'AMERICAS'),
+        ('12:42', 'TEXAS', 'BBC', 'An execution that took more than an hour', 'AMERICAS'),
+        ('13:41', 'KAMPALA', 'allAfrica', 'Gatherings and travel restricted over Ebola', 'AFRICA'),
+        ('14:43', 'MADRID', 'BBC', 'Cost-of-living protests across Europe', 'EUROPE'),
+        ('15:55', 'JOHANNESBURG', 'BBC', 'Nearly 600 women killed in three months', 'AFRICA'),
+        ('16:15', 'TAIPEI', 'Benzinga', "Taiwan's worst week since 1990", 'ASIA-PACIFIC'),
+        ('16:40', 'HODEIDA', 'The Hindu', 'Saudi-led strikes hit a Yemen port', 'MIDDLE EAST'),
+        ('16:54', 'ROME', 'The Hindu', 'Workers and students strike over wages', 'EUROPE'),
+        ('16:55', 'BUENOS AIRES', 'Buenos Aires Times', 'Country risk tops 1,000 as bonds slump', 'AMERICAS'),
+        ('17:00', 'NEW YORK', 'SCMP', 'A plan to close Rikers Island by 2032', 'AMERICAS'),
+        ('17:03', 'BRUSSELS', 'France 24', 'A "landmark" UK-EU deal after Brexit', 'EUROPE'),
+        ('17:15', 'NEW YORK', 'Straits Times', '19 years for a plot to kill a Sikh leader', 'AMERICAS'),
+        ('17:33', 'MERCURY', 'IFLScience', 'BepiColombo arrives at Mercury after eight years', 'SPACE'),
+        ('17:55', 'LONDON', 'SCMP', 'Researcher: Claude proved the Riemann hypothesis', 'EUROPE'),
+        ('18:14', 'COPENHAGEN', 'SCMP', 'A Russian plot to kill a rapper; a diplomat out', 'EUROPE'),
+        ('18:21', 'WASHINGTON', 'Straits Times', 'A tax on AI data centres built abroad', 'AMERICAS'),
+        ('18:31', 'VOYAGER 1', 'My Modern Met', 'One light-day from Earth', 'SPACE'),
+        ('18:43', 'KERCH', 'Al Jazeera', 'Ukraine strikes the Kerch bridge', 'EUROPE'),
+        ('19:03', 'WASHINGTON', 'BBC', 'The White House removes its cyber chief', 'AMERICAS'),
+        ('19:47', 'POLAND', 'AP', '11 countries drill for a Ukraine mission', 'EUROPE'),
+        ('22:14', 'TAIZ', 'BBC', 'A city cut off for weeks by the Houthis', 'MIDDLE EAST'),
+        ('22:37', 'PARIS', 'BBC', 'Police sentenced over the Zecler beating', 'EUROPE'),
+        ('22:53', 'PORT-AU-PRINCE', 'AP', 'A deal with El Salvador to build prisons', 'AMERICAS'),
+        ('22:53', 'NEW YORK', 'BBC', 'GTA 6 takes $3.8bn in a single day', 'AMERICAS'),
+        ('23:06', 'ANTALYA', 'Al Jazeera', 'COP31 deadlocks and runs into overtime', 'EUROPE'),
+        ('23:09', 'SYDNEY', 'Guardian', 'A coalmine law passes in New South Wales', 'OCEANIA'),
+        ('23:15', 'WASHINGTON', 'BBC', 'More UFO footage is declassified', 'AMERICAS'),
+        ('23:39', 'THE HAGUE', 'Sydney Morning Herald', "BYD's Land Rover copy is banned in Europe", 'EUROPE'),
+    ],
+}
+
+
 def main():
-    r = json.load(open(os.path.join(HERE, "resolved.json"), encoding="utf-8"))
+    r = dict(DATA)
+    r["leads"] = [dict(zip(("hm", "place", "src", "head", "deck", "region"), t))
+                  for t in DATA["leads"]]
+    r["items"] = [dict(zip(("hm", "place", "src", "label", "region"), t))
+                  for t in DATA["items"]]
     img = Image.new("RGB", (W, H), BG)
     d = ImageDraw.Draw(img)
     warn = []
@@ -285,7 +357,7 @@ def main():
                   font("narrowb", 9), MUTED, tracking=1.4)
     rule(d, y + 13, h=2)
 
-    out = os.path.join(HERE, "..", "repo", "entry.png")
+    out = os.path.join(HERE, "..", "entry.png")
     os.makedirs(os.path.dirname(out), exist_ok=True)
     img.save(out, optimize=True)
     print(f"wrote entry.png  {os.path.getsize(out)} bytes  bottom={y}  date={dsize}px  runs={len(BOXES)}")
