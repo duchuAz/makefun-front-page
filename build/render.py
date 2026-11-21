@@ -22,6 +22,7 @@ INK    = (23, 19, 15)
 ACCENT = (168, 35, 27)
 MUTED  = (111, 101, 88)
 RULE   = (203, 193, 176)
+FAINT  = (150, 141, 124)     # wire names: readable, but never louder than the label
 
 F = {
     "slab":    "/usr/share/fonts/opentype/roboto/slab/RobotoSlab-Bold.otf",
@@ -33,13 +34,10 @@ F = {
 
 font = lambda k, s: ImageFont.truetype(F[k], s)
 
-
 BOXES = []          # every run of text, for the geometry audit at the end
-
 
 def tw(d, s, f, tracking=0.0):
     return 0 if not s else d.textlength(s, font=f) + tracking * (len(s) - 1)
-
 
 def text(d, xy, s, f, fill=INK, tracking=0.0):
     x, y = xy
@@ -52,10 +50,8 @@ def text(d, xy, s, f, fill=INK, tracking=0.0):
     else:
         d.text((x, y), s, font=f, fill=fill)
 
-
 def tracked_right(d, x_right, y, s, f, fill=INK, tracking=0.0):
     text(d, (x_right - tw(d, s, f, tracking), y), s, f, fill, tracking)
-
 
 def wrap(d, s, f, maxw):
     words, lines, cur = s.split(), [], ""
@@ -68,7 +64,6 @@ def wrap(d, s, f, maxw):
             cur = w
     return lines + ([cur] if cur else [])
 
-
 def fit(d, s, key, size, maxw, floor=8):
     while size > floor:
         f = font(key, size)
@@ -77,10 +72,8 @@ def fit(d, s, key, size, maxw, floor=8):
         size -= 1
     return font(key, floor), floor
 
-
 def rule(d, y, h=1, col=RULE, x0=M, x1=W - M):
     d.rectangle([x0, y, x1 - 1, y + h - 1], fill=col)
-
 
 def audit(w, h, slack=1.0):
     """Report runs that leave the page or sit on top of another run."""
@@ -96,7 +89,6 @@ def audit(w, h, slack=1.0):
             if a[1] < b[3] - slack and b[1] < a[3] - slack:
                 bad.append(f"overlap {a[4]!r} / {b[4]!r}")
     return bad
-
 
 def main():
     r = json.load(open(os.path.join(HERE, "resolved.json"), encoding="utf-8"))
@@ -151,17 +143,17 @@ def main():
     # dominant lead
     lead = r["leads"][0]
     yy = top
-    stamp(d, M, yy, lead, 10)
-    yy += 17
-    f_h = font("slab", 29)
-    for line in wrap(d, lead["head"], f_h, big_w - 10):
+    stamp(d, M, yy, lead, 11)
+    yy += 19
+    f_h = font("slab", 38)
+    for line in wrap(d, lead["head"], f_h, big_w - 6):
         text(d, (M, yy), line, f_h, INK)
-        yy += 35
-    yy += 4
-    f_b = font("narrow", 13)
-    for line in wrap(d, lead["deck"], f_b, big_w - 24):
+        yy += 45
+    yy += 5
+    f_b = font("narrow", 14)
+    for line in wrap(d, lead["deck"], f_b, big_w - 20):
         text(d, (M, yy), line, f_b, INK)
-        yy += 15.5
+        yy += 17
     yy += 3
     text(d, (M, yy), lead["src"], font("narrow", 10), MUTED)
     left_bottom = yy + 12
@@ -253,7 +245,7 @@ def main():
         yy = y + rr * row_h
         text(d, (x, yy), it["hm"], f_time, ACCENT)
         text(d, (x + 31, yy), it["place"], f_place, MUTED, tracking=0.8)
-        text(d, (x + 31 + tw(d, it["place"], f_place, 0.8) + 7, yy), it["src"], f_src, RULE)
+        text(d, (x + 31 + tw(d, it["place"], f_place, 0.8) + 7, yy), it["src"], f_src, FAINT)
         if tw(d, it["label"], f_label) > cw:
             warn.append(f"label too wide: {it['label']}")
         text(d, (x, yy + 12), it["label"], f_label, INK)
@@ -302,7 +294,6 @@ def main():
     for w in warn:
         print("  WARN", w)
     return 0
-
 
 if __name__ == "__main__":
     raise SystemExit(main())
